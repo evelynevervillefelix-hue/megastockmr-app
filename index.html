@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock MR - Gestion de Véhicules</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center;">
+                <img class="fiat-logo" src="mr_auto_logo.svg" alt="MR Auto Logo">
+                <div>
+                    <h1 style="margin: 0.2em 0 0 0;">🚗 Stock MR</h1>
+                    <p style="margin: 0.2em 0 0 0;">Gestion du stock et des factures</p>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="logout()" style="margin-right: 1em;">🚪 Déconnexion</button>
+        </div>
+    </header>
+
+    <nav>
+        <button class="tab-btn active" onclick="switchTab('stock')">🚗 Stock</button>
+        <button class="tab-btn" onclick="switchTab('invoices')">📑 Factures</button>
+        <button class="tab-btn" onclick="switchTab('admin')">⚙️ Admin</button>
+    </nav>
+
+    <div class="container">
+        <!-- SECTION STOCK -->
+        <div id="stock" class="section active">
+            <div class="header-actions">
+                <h2>🚗 Gestion du Stock</h2>
+                <div>
+                    <button class="btn btn-primary" onclick="addVehicleModal()">➕ Ajouter Véhicule</button>
+                    <button class="btn btn-secondary" onclick="refreshData()">🔄 Rafraîchir</button>
+                    <label class="btn btn-secondary">📥 Importer CSV<input type="file" accept=".csv" onchange="importVehiclesCSV(event)" style="display:none;"></label>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div id="total-vehicles">0</div>
+                    <div>Total Véhicules</div>
+                </div>
+                <div class="stat-card">
+                    <div id="sold-vehicles">0</div>
+                    <div>Vendus</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stock-vehicles">0</div>
+                    <div>En Stock</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="vehicles-table">
+                    <thead>
+                        <tr>
+                            <th>MR</th>
+                            <th>Marque</th>
+                            <th>Modèle</th>
+                            <th>Année</th>
+                            <th>Coût</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehicles-tbody">
+                        <tr><td colspan="7" style="text-align:center;">Chargement...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION FACTURES -->
+        <div id="invoices" class="section">
+            <div class="header-actions">
+                <h2>📑 Gestion des Factures</h2>
+                <div>
+                    <button class="btn btn-primary" onclick="addInvoiceModal()">➕ Ajouter Facture</button>
+                    <label class="btn btn-secondary">📥 Importer CSV<input type="file" accept=".csv" onchange="importInvoicesCSV(event)" style="display:none;"></label>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="invoices-table">
+                    <thead>
+                        <tr>
+                            <th>MR Véhicule</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Montant</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoices-tbody">
+                        <tr><td colspan="6" style="text-align:center;">Chargement...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION ADMIN -->
+        <div id="admin" class="section">
+            <div class="header-actions">
+                <h2>⚙️ Administration</h2>
+            </div>
+
+            <div class="admin-block">
+                <h3>📊 Statistiques</h3>
+                <div id="admin-stats"></div>
+            </div>
+
+            <div class="admin-block">
+                <h3>🗑️ Actions Dangereuses</h3>
+                <button class="btn btn-danger" onclick="if(confirm('Êtes-vous sûr ? Cette action est irréversible.')) { clearAllData(); }">Effacer toutes les données</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VÉHICULE -->
+    <div id="vehicleModal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="vehicle-modal-title">Ajouter Véhicule</h2>
+            
+            <form id="vehicle-form" onsubmit="saveVehicle(event)">
+                <div class="form-group">
+                    <label>MR</label>
+                    <input type="text" id="vehicle-mr" required>
+                </div>
+                <div class="form-group">
+                    <label>Marque</label>
+                    <input type="text" id="vehicle-marque" required>
+                </div>
+                <div class="form-group">
+                    <label>Modèle</label>
+                    <input type="text" id="vehicle-modele" required>
+                </div>
+                <div class="form-group">
+                    <label>Année</label>
+                    <input type="number" id="vehicle-annee" required>
+                </div>
+                <div class="form-group">
+                    <label>Coût (CAD)</label>
+                    <input type="number" id="vehicle-cout" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Statut</label>
+                    <select id="vehicle-statut" required>
+                        <option value="En stock">En stock</option>
+                        <option value="Vendu">Vendu</option>
+                        <option value="En réparation">En réparation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Prix de vente (CAD)</label>
+                    <input type="number" id="vehicle-sold" step="0.01">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL FACTURE -->
+    <div id="invoiceModal" class="modal" onclick="closeInvoiceModal(event)">
+        <div class="modal-content">
+            <span class="close" onclick="closeInvoiceModal()">&times;</span>
+            <h2>Ajouter Facture</h2>
+            
+            <form id="invoice-form" onsubmit="saveInvoice(event)">
+                <div class="form-group">
+                    <label>MR Véhicule</label>
+                    <select id="invoice-mr" required>
+                        <option value="">-- Sélectionner un véhicule --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="invoice-type" required>
+                        <option value="Mécanique">Mécanique</option>
+                        <option value="Carrosserie">Carrosserie</option>
+                        <option value="Pneus">Pneus</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="invoice-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="invoice-description" required>
+                </div>
+                <div class="form-group">
+                    <label>Montant (CAD)</label>
+                    <input type="number" id="invoice-montant" step="0.01" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeInvoiceModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DÉTAILS VÉHICULE -->
+    <div id="detailsModal" class="modal" onclick="closeDetailsModal(event)">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <span class="close" onclick="closeDetailsModal()">&times;</span>
+            <div id="vehicle-details"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="app-enhanced.js"></script>
+    <script src="config.js"></script>
+</body>
+</html>

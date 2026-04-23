@@ -1,0 +1,18 @@
+{
+  "name": "stockmr",
+  "title": "Stock MR - Gestion de Véhicules",
+  "description": "Application web de gestion de stock de véhicules et de factures avec interface d'administration complète",
+  "version": "1.0.0",
+  "type": "static",
+  "public": true,
+  "files": [
+    "index.html",
+    "style.css",
+    "app.js",
+    "app-enhanced.js",
+    "auth.js",
+    "config.js",
+    "firebase.js",
+    "mr_auto_logo.svg"
+  ]
+}
