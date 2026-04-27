@@ -5,29 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock MR - Gestion de Véhicules</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
-    <script src="auth.js"></script>
 </head>
 <body>
     <header>
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="display: flex; align-items: center;">
-                <img class="fiat-logo" src="mr_auto_logo.svg" alt="MR Auto Logo">
-                <div>
-                    <h1 style="margin: 0.2em 0 0 0;">🚗 Stock MR</h1>
-                    <p style="margin: 0.2em 0 0 0;">Gestion du stock et des factures</p>
-                </div>
-            </div>
-            <button class="btn btn-secondary" onclick="logout()" style="margin-right: 1em;">🚪 Déconnexion</button>
-        </div>
+        <img class="fiat-logo" src="mr_auto_logo.jpg" alt="MR Auto Logo">
+        <h1>🚗 Stock MR</h1>
+        <p>Gestion du stock et des factures</p>
     </header>
 
-    <nav>
-        <button class="tab-btn active" onclick="switchTab('stock')">🚗 Stock</button>
-        <button class="tab-btn" onclick="switchTab('invoices')">📑 Factures</button>
-        <button class="tab-btn" onclick="switchTab('admin')">⚙️ Admin</button>
+<nav>
+        <button class="tab-btn active" onclick="switchTab(\'stock\')">🚗 Stock</button>
+        <button class="tab-btn" onclick="switchTab(\'invoices\')">📑 Factures</button>
+        <button class="tab-btn" onclick="switchTab(\'admin\')">⚙️ Admin</button>
+        <button class="btn btn-danger" id="logout-btn-nav" style="display: none;">Déconnexion</button>
     </nav>
 
     <div class="container">
@@ -107,20 +101,8 @@
         </div>
 
         <!-- SECTION ADMIN -->
-        <div id="admin" class="section">
-            <div class="header-actions">
-                <h2>⚙️ Administration</h2>
-            </div>
-
-            <div class="admin-block">
-                <h3>📊 Statistiques</h3>
-                <div id="admin-stats"></div>
-            </div>
-
-            <div class="admin-block">
-                <h3>🗑️ Actions Dangereuses</h3>
-                <button class="btn btn-danger" onclick="if(confirm('Êtes-vous sûr ? Cette action est irréversible.')) { clearAllData(); }">Effacer toutes les données</button>
-            </div>
+<div id="admin" class="section">
+            <div id="admin-content"></div>
         </div>
     </div>
 
@@ -131,6 +113,7 @@
             <h2 id="vehicle-modal-title">Ajouter Véhicule</h2>
             
             <form id="vehicle-form" onsubmit="saveVehicle(event)">
+                <div id="vehicle-dynamic-fields"></div>
                 <div class="form-group">
                     <label>MR</label>
                     <input type="text" id="vehicle-mr" required>
@@ -178,6 +161,7 @@
             <h2>Ajouter Facture</h2>
             
             <form id="invoice-form" onsubmit="saveInvoice(event)">
+                <div id="invoice-dynamic-fields"></div>
                 <div class="form-group">
                     <label>MR Véhicule</label>
                     <select id="invoice-mr" required>
@@ -221,8 +205,22 @@
         </div>
     </div>
 
+    <!-- Login Page -->
+    <div id="login-page" class="login-container" style="display: none;">
+        <div class="login-box">
+            <h2>Connexion Administrateur</h2>
+            <form id="login-form">
+                <input type="password" id="admin-code-input" placeholder="Code d\'accès" required>
+                <button type="submit" class="btn btn-primary">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <button class="btn btn-danger" id="logout-btn" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000;">Déconnexion</button>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+    <script type="module" src="admin.js"></script>
     <script src="app.js"></script>
-    <script src="app-enhanced.js"></script>
-    <script src="config.js"></script>
 </body>
 </html>

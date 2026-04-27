@@ -28,7 +28,7 @@ body::before {
 header {
   background: rgba(35,39,43,0.85);
   color: #fff;
-  padding: 2em 2em;
+  padding: 3.5em 0 2em 0;
   text-align: center;
   width: 100vw;
   box-shadow: 0 8px 32px #b71c1c33;
@@ -38,7 +38,6 @@ header {
   margin-bottom: 2em;
   backdrop-filter: blur(6px);
   z-index: 2;
-  box-sizing: border-box;
 }
 header .fiat-logo {
   display: inline-block;
@@ -220,7 +219,6 @@ tr:hover td {
   font-size: 1.08em;
   background: #f7f7fa;
   box-shadow: 0 2px 8px #b71c1c11;
-  box-sizing: border-box;
 }
 .form-actions {
   display: flex;
@@ -246,8 +244,6 @@ tr:hover td {
   position: relative;
   border: 2px solid #b71c1c22;
   animation: fadeIn 0.4s;
-  max-height: 90vh;
-  overflow-y: auto;
 }
 .close {
   position: absolute;
